@@ -1,0 +1,38 @@
+version: '3.8'
+services:
+  web:
+    build:
+      context: . # Specifies the directory containing the Dockerfile and the root of the application context
+      dockerfile: Dockerfile # Specifies the name of the Dockerfile
+    ports:
+      - '3000:3000' # Maps port 3000 of the container to port 3000 on the host
+    environment:
+      - NODE_ENV=production
+      - STRIPE_SECRET_KEY=your_stripe_secret_key_here
+      - STRIPE_PUBLIC_KEY=your_stripe_public_key_here
+      - DATABASE_URL=postgresql://postgres:your_db_password@db:5432/your_db_name
+    volumes:
+      - .:/usr/src/app # Mounts the code directory to the container to allow for live changes
+      - /usr/src/app/node_modules # Uses a volume for node_modules to avoid overwriting with the host's node_modules
+    command: npm start # The command that starts your application
+    depends_on:
+      - db # Ensures the database starts before the web service
+    networks:
+      - webnet
+
+  db:
+    image: postgres
+    environment:
+      POSTGRES_DB: your_db_name
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: your_db_password
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - webnet
+
+volumes:
+  db-data: # Defines a volume where the PostgreSQL data will persist
+
+networks:
+  webnet: # Network configuration for containers to communicate
